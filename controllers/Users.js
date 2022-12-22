@@ -23,14 +23,14 @@ usersController.register = async (req, res, next) => {
     //Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    // let avatar = await DocumentModel.findById("60c39f54f0b2c4268eb53367");
-    // let coverImage = await DocumentModel.findById("60c39eb8f0b2c4268eb53366");
+    let avatar = await DocumentModel.findById("63a12040c2efff43d6acbd40");
+    let coverImage = await DocumentModel.findById("63a3b5b1c377b22eba339de6");
     user = new UserModel({
       phonenumber: phonenumber,
       password: hashedPassword,
       username: username,
-      // avatar: "60c39f54f0b2c4268eb53367",
-      // cover_image: "60c39eb8f0b2c4268eb53366",
+      avatar: "63a12040c2efff43d6acbd40",
+      cover_image: "60c39eb8f0b2c4268eb53366",
     });
 
     try {
@@ -52,8 +52,8 @@ usersController.register = async (req, res, next) => {
           id: savedUser._id,
           phonenumber: savedUser.phonenumber,
           username: savedUser.username,
-          // avatar: avatar,
-          // cover_image: coverImage,
+          avatar: avatar,
+          cover_image: coverImage,
         },
         token: token,
       });

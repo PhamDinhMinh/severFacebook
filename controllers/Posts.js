@@ -15,70 +15,70 @@ postsController.create = async (req, res, next) => {
   let userId = req.userId;
   try {
     const { described, images, videos } = req.body;
-    let dataImages = [];
-    if (Array.isArray(images)) {
-      for (const image of images) {
-        if (uploadFile.matchesFileBase64(image) !== false) {
-          const imageResult = uploadFile.uploadFile(image);
-          if (imageResult !== false) {
-            let imageDocument = new DocumentModel({
-              fileName: imageResult.fileName,
-              fileSize: imageResult.fileSize,
-              type: imageResult.type,
-            });
-            let savedImageDocument = await imageDocument.save();
-            if (savedImageDocument !== null) {
-              dataImages.push(savedImageDocument._id);
-            }
-          }
-        }
-      }
-    }
+    // let dataImages = [];
+    // if (Array.isArray(images)) {
+    //   for (const image of images) {
+    //     if (uploadFile.matchesFileBase64(image) !== false) {
+    //       const imageResult = uploadFile.uploadFile(image);
+    //       if (imageResult !== false) {
+    //         let imageDocument = new DocumentModel({
+    //           fileName: imageResult.fileName,
+    //           fileSize: imageResult.fileSize,
+    //           type: imageResult.type,
+    //         });
+    //         let savedImageDocument = await imageDocument.save();
+    //         if (savedImageDocument !== null) {
+    //           dataImages.push(savedImageDocument._id);
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
-    let dataVideos = [];
-    if (Array.isArray(videos)) {
-      for (const video of videos) {
-        console.log("video 1");
-        if (uploadFile.matchesFileBase64(video) !== false) {
-          console.log("video 2");
-          const videoResult = uploadFile.uploadFile(video);
-          if (videoResult !== false) {
-            console.log("video 3");
-            let videoDocument = new DocumentModel({
-              fileName: videoResult.fileName,
-              fileSize: videoResult.fileSize,
-              type: videoResult.type,
-            });
-            let savedVideoDocument = await videoDocument.save();
-            if (savedVideoDocument !== null) {
-              dataVideos.push(savedVideoDocument._id);
-            }
-          }
-        }
-      }
-    }
+    // let dataVideos = [];
+    // if (Array.isArray(videos)) {
+    //   for (const video of videos) {
+    //     console.log("video 1");
+    //     if (uploadFile.matchesFileBase64(video) !== false) {
+    //       console.log("video 2");
+    //       const videoResult = uploadFile.uploadFile(video);
+    //       if (videoResult !== false) {
+    //         console.log("video 3");
+    //         let videoDocument = new DocumentModel({
+    //           fileName: videoResult.fileName,
+    //           fileSize: videoResult.fileSize,
+    //           type: videoResult.type,
+    //         });
+    //         let savedVideoDocument = await videoDocument.save();
+    //         if (savedVideoDocument !== null) {
+    //           dataVideos.push(savedVideoDocument._id);
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
     const post = new PostModel({
       author: userId,
       described: described,
-      images: dataImages,
-      videos: dataVideos,
+      images: images,
+      videos: videos,
       countComments: 0,
     });
-    let postSaved = (await post.save()).populate("images").populate("videos");
-    postSaved = await PostModel.findById(postSaved._id)
-      .populate("images", ["fileName"])
-      .populate("videos", ["fileName"])
-      .populate({
-        path: "author",
-        select: "_id username phonenumber avatar",
-        model: "Users",
-        populate: {
-          path: "avatar",
-          select: "_id fileName",
-          model: "Documents",
-        },
-      });
+    let postSaved = await post.save();
+    // postSaved = await PostModel.findById(postSaved._id)
+    //   .populate("images", ["fileName"])
+    //   .populate("videos", ["fileName"])
+    //   .populate({
+    //     path: "author",
+    //     select: "_id username phonenumber avatar",
+    //     model: "Users",
+    //     populate: {
+    //       path: "avatar",
+    //       select: "_id fileName",
+    //       model: "Documents",
+    //     },
+    //   });
     return res.status(httpStatus.OK).json({
       data: postSaved,
     });
@@ -105,63 +105,63 @@ postsController.edit = async (req, res, next) => {
     }
 
     const { described, images, videos } = req.body;
-    let dataImages = [];
-    if (Array.isArray(images)) {
-      for (const image of images) {
-        // check is old file
-        if (image) {
-          let imageFile = !image.includes("data:")
-            ? await DocumentModel.findById(image)
-            : null;
-          if (imageFile == null) {
-            if (uploadFile.matchesFileBase64(image) !== false) {
-              const imageResult = uploadFile.uploadFile(image);
-              if (imageResult !== false) {
-                let imageDocument = new DocumentModel({
-                  fileName: imageResult.fileName,
-                  fileSize: imageResult.fileSize,
-                  type: imageResult.type,
-                });
-                let savedImageDocument = await imageDocument.save();
-                if (savedImageDocument !== null) {
-                  dataImages.push(savedImageDocument._id);
-                }
-              }
-            }
-          } else {
-            dataImages.push(image);
-          }
-        }
-      }
-    }
+    // let dataImages = [];
+    // if (Array.isArray(images)) {
+    //   for (const image of images) {
+    //     // check is old file
+    //     if (image) {
+    //       let imageFile = !image.includes("data:")
+    //         ? await DocumentModel.findById(image)
+    //         : null;
+    //       if (imageFile == null) {
+    //         if (uploadFile.matchesFileBase64(image) !== false) {
+    //           const imageResult = uploadFile.uploadFile(image);
+    //           if (imageResult !== false) {
+    //             let imageDocument = new DocumentModel({
+    //               fileName: imageResult.fileName,
+    //               fileSize: imageResult.fileSize,
+    //               type: imageResult.type,
+    //             });
+    //             let savedImageDocument = await imageDocument.save();
+    //             if (savedImageDocument !== null) {
+    //               dataImages.push(savedImageDocument._id);
+    //             }
+    //           }
+    //         }
+    //       } else {
+    //         dataImages.push(image);
+    //       }
+    //     }
+    //   }
+    // }
 
-    let dataVideos = [];
-    if (Array.isArray(videos)) {
-      for (const video of videos) {
-        // check is old file
-        if (video) {
-          let videoFile = !video.includes("data:")
-            ? await DocumentModel.findById(video)
-            : null;
-          if (videoFile == null) {
-            if (uploadFile.matchesFileBase64(video) !== false) {
-              const videoResult = uploadFile.uploadFile(video);
-              if (videoResult !== false) {
-                let videoDocument = new DocumentModel({
-                  fileName: videoResult.fileName,
-                  fileSize: videoResult.fileSize,
-                  type: videoResult.type,
-                });
-                let savedVideoDocument = await videoDocument.save();
-                if (savedVideoDocument !== null) {
-                  dataVideos.push(savedVideoDocument._id);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    // let dataVideos = [];
+    // if (Array.isArray(videos)) {
+    //   for (const video of videos) {
+    //     // check is old file
+    //     if (video) {
+    //       let videoFile = !video.includes("data:")
+    //         ? await DocumentModel.findById(video)
+    //         : null;
+    //       if (videoFile == null) {
+    //         if (uploadFile.matchesFileBase64(video) !== false) {
+    //           const videoResult = uploadFile.uploadFile(video);
+    //           if (videoResult !== false) {
+    //             let videoDocument = new DocumentModel({
+    //               fileName: videoResult.fileName,
+    //               fileSize: videoResult.fileSize,
+    //               type: videoResult.type,
+    //             });
+    //             let savedVideoDocument = await videoDocument.save();
+    //             if (savedVideoDocument !== null) {
+    //               dataVideos.push(savedVideoDocument._id);
+    //             }
+    //           }
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
 
     let postSaved = await PostModel.findByIdAndUpdate(postId, {
       described: described,

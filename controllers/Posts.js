@@ -165,8 +165,8 @@ postsController.edit = async (req, res, next) => {
 
     let postSaved = await PostModel.findByIdAndUpdate(postId, {
       described: described,
-      images: dataImages,
-      videos: dataVideos,
+      images: images,
+      videos: videos,
     });
     postSaved = await PostModel.findById(postSaved._id)
       .populate("images", ["fileName"])

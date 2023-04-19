@@ -62,7 +62,7 @@ io.on("connection", (socket) => {
   //     socket.emit('output-messages', result)
   // })
   // console.log('a user connected: ', socket.id);
-  // console.log(socket.id);
+  console.log(1111, 'socket.id', socket.id);
   if (socket.handshake.headers.token) {
     try {
       decoded = jwt.verify(
@@ -97,10 +97,12 @@ io.on("connection", (socket) => {
     // console.log(socketIds[userId])
   });
   socket.on("chatmessage", async (msg) => {
-    // console.log(msg.token)
+    console.log(msg)
+    console.log(msg.token)
     if (msg.token && msg.receiverId) {
       try {
         decoded = jwt.verify(msg.token, process.env.JWT_SECRET);
+        console.log({decoded})
         msg.senderId = decoded.id;
         delete msg.token;
         msg.time = new Date();
@@ -186,10 +188,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("seenMessage", async (msg) => {
-    // console.log(msg.token)
+    console.log('token', msg.token)
     if (msg.token && msg.chatId) {
       try {
         decoded = jwt.verify(msg.token, process.env.JWT_SECRET);
+        console.log({decoded})
         msg.userId = decoded.id;
         delete msg.token;
         await chatController.seenMessage(msg);

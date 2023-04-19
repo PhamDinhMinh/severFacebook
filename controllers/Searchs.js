@@ -46,7 +46,9 @@ searchController.search = async (req, res, next) => {
                     ]
                 }
             ]
-        }).populate('avatar').limit(10);
+        })
+        // .populate('avatar')
+        .limit(10);
 
         friendIds.push(userId);
 
@@ -60,7 +62,9 @@ searchController.search = async (req, res, next) => {
                     ]
                 }
             ]
-        }).populate('avatar').limit(5);
+        })
+        // .populate('avatar')
+        .limit(5);
 
         let temp = [];
 
@@ -94,17 +98,17 @@ searchController.search = async (req, res, next) => {
         }).populate({
             path: 'senderId',
             model: 'Users',
-            populate: {
-                path: 'avatar',
-                model: 'Documents'
-            }
+            // populate: {
+            //     path: 'avatar',
+            //     model: 'Documents'
+            // }
         }).populate({
             path: 'receiverId',
             model: 'Users',
-            populate: {
-                path: 'avatar',
-                model: 'Documents'
-            }
+            // populate: {
+            //     path: 'avatar',
+            //     model: 'Documents'
+            // }
         }).limit(10);
 
         for (let i = 0; i < messages.length; i++) {

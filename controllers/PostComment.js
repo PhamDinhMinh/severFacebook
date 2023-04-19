@@ -80,13 +80,7 @@ postCommentController.list = async (req, res, next) => {
             user: listIdFriends,
         }).populate({
             path: 'user',
-            select: '_id username phonenumber avatar',
             model: 'Users',
-            populate: {
-                path: 'avatar',
-                select: '_id fileName',
-                model: 'Documents',
-            },
         });
         let post;
         post = await PostModel.findById(req.params.postId);

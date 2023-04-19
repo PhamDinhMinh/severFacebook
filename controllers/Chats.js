@@ -140,10 +140,6 @@ chatController.getChats = async (req, res, next) => {
         let chats = await ChatModel.find({ members: req.userId }).populate({
             path: 'members',
             model: 'Users',
-            populate: {
-                path: 'avatar',
-                model: 'Documents'
-            }
         });
         let results = [];
         for (let i = 0; i < chats.length; i++) {

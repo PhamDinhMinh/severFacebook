@@ -2,61 +2,15 @@ const jwt = require("jsonwebtoken");
 const UserModel = require("../models/Users");
 const PostModel = require("../models/Posts");
 const FriendModel = require("../models/Friends");
-const DocumentModel = require("../models/Documents");
 var url = require("url");
 const httpStatus = require("../utils/httpStatus");
-const bcrypt = require("bcrypt");
-const { JWT_SECRET } = require("../constants/constants");
-const { ROLE_CUSTOMER } = require("../constants/constants");
-const uploadFile = require("../functions/uploadFile");
 
+const path = require("path");
 const postsController = {};
 postsController.create = async (req, res, next) => {
   let userId = req.userId;
   try {
     const { described, images, videos } = req.body;
-    // let dataImages = [];
-    // if (Array.isArray(images)) {
-    //   for (const image of images) {
-    //     if (uploadFile.matchesFileBase64(image) !== false) {
-    //       const imageResult = uploadFile.uploadFile(image);
-    //       if (imageResult !== false) {
-    //         let imageDocument = new DocumentModel({
-    //           fileName: imageResult.fileName,
-    //           fileSize: imageResult.fileSize,
-    //           type: imageResult.type,
-    //         });
-    //         let savedImageDocument = await imageDocument.save();
-    //         if (savedImageDocument !== null) {
-    //           dataImages.push(savedImageDocument._id);
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
-
-    // let dataVideos = [];
-    // if (Array.isArray(videos)) {
-    //   for (const video of videos) {
-    //     console.log("video 1");
-    //     if (uploadFile.matchesFileBase64(video) !== false) {
-    //       console.log("video 2");
-    //       const videoResult = uploadFile.uploadFile(video);
-    //       if (videoResult !== false) {
-    //         console.log("video 3");
-    //         let videoDocument = new DocumentModel({
-    //           fileName: videoResult.fileName,
-    //           fileSize: videoResult.fileSize,
-    //           type: videoResult.type,
-    //         });
-    //         let savedVideoDocument = await videoDocument.save();
-    //         if (savedVideoDocument !== null) {
-    //           dataVideos.push(savedVideoDocument._id);
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
 
     const post = new PostModel({
       author: userId,
@@ -66,19 +20,7 @@ postsController.create = async (req, res, next) => {
       countComments: 0,
     });
     let postSaved = await post.save();
-    // postSaved = await PostModel.findById(postSaved._id)
-    //   .populate("images", ["fileName"])
-    //   .populate("videos", ["fileName"])
-    //   .populate({
-    //     path: "author",
-    //     select: "_id username phonenumber avatar",
-    //     model: "Users",
-    //     populate: {
-    //       path: "avatar",
-    //       select: "_id fileName",
-    //       model: "Documents",
-    //     },
-    //   });
+
     return res.status(httpStatus.OK).json({
       data: postSaved,
     });
@@ -104,83 +46,14 @@ postsController.edit = async (req, res, next) => {
         .json({ message: "Can not edit this post" });
     }
 
-    const { described, images, videos } = req.body;
-    // let dataImages = [];
-    // if (Array.isArray(images)) {
-    //   for (const image of images) {
-    //     // check is old file
-    //     if (image) {
-    //       let imageFile = !image.includes("data:")
-    //         ? await DocumentModel.findById(image)
-    //         : null;
-    //       if (imageFile == null) {
-    //         if (uploadFile.matchesFileBase64(image) !== false) {
-    //           const imageResult = uploadFile.uploadFile(image);
-    //           if (imageResult !== false) {
-    //             let imageDocument = new DocumentModel({
-    //               fileName: imageResult.fileName,
-    //               fileSize: imageResult.fileSize,
-    //               type: imageResult.type,
-    //             });
-    //             let savedImageDocument = await imageDocument.save();
-    //             if (savedImageDocument !== null) {
-    //               dataImages.push(savedImageDocument._id);
-    //             }
-    //           }
-    //         }
-    //       } else {
-    //         dataImages.push(image);
-    //       }
-    //     }
-    //   }
-    // }
-
-    // let dataVideos = [];
-    // if (Array.isArray(videos)) {
-    //   for (const video of videos) {
-    //     // check is old file
-    //     if (video) {
-    //       let videoFile = !video.includes("data:")
-    //         ? await DocumentModel.findById(video)
-    //         : null;
-    //       if (videoFile == null) {
-    //         if (uploadFile.matchesFileBase64(video) !== false) {
-    //           const videoResult = uploadFile.uploadFile(video);
-    //           if (videoResult !== false) {
-    //             let videoDocument = new DocumentModel({
-    //               fileName: videoResult.fileName,
-    //               fileSize: videoResult.fileSize,
-    //               type: videoResult.type,
-    //             });
-    //             let savedVideoDocument = await videoDocument.save();
-    //             if (savedVideoDocument !== null) {
-    //               dataVideos.push(savedVideoDocument._id);
-    //             }
-    //           }
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
+    const { described } = req.body;
 
     let postSaved = await PostModel.findByIdAndUpdate(postId, {
       described: described,
-      images: images,
-      videos: videos,
     });
-    postSaved = await PostModel.findById(postSaved._id)
-      .populate("images", ["fileName"])
-      .populate("videos", ["fileName"])
-      .populate({
-        path: "author",
-        select: "_id username phonenumber avatar",
-        model: "Users",
-        populate: {
-          path: "avatar",
-          select: "_id fileName",
-          model: "Documents",
-        },
-      });
+
+    postSaved = await PostModel.findById(postSaved._id);
+
     return res.status(httpStatus.OK).json({
       data: postSaved,
     });
@@ -193,8 +66,6 @@ postsController.edit = async (req, res, next) => {
 postsController.show = async (req, res, next) => {
   try {
     let post = await PostModel.findById(req.params.id)
-      .populate("images", ["fileName"])
-      .populate("videos", ["fileName"])
       .populate({
         path: "author",
         select: "_id username phonenumber avatar",
@@ -248,17 +119,17 @@ postsController.list = async (req, res, next) => {
       posts = await PostModel.find({
         author: req.query.userId,
       })
-        .populate("images", ["fileName"])
-        .populate("videos", ["fileName"])
+        // .populate("images", ["fileName"])
+        // .populate("videos", ["fileName"])
         .populate({
           path: "author",
-          select: "_id username phonenumber avatar",
+          // select: "_id username phonenumber avatar",
           model: "Users",
-          populate: {
-            path: "avatar",
-            select: "_id fileName",
-            model: "Documents",
-          },
+          // populate: {
+          //   path: "avatar",
+          //   select: "_id fileName",
+          //   model: "Documents",
+          // },
         });
     } else {
       const user = await UserModel.findById(userId);
@@ -292,18 +163,18 @@ postsController.list = async (req, res, next) => {
       posts = await PostModel.find({
         author: listIdFriends,
       })
-        .populate("images", ["fileName"])
-        .populate("videos", ["fileName"])
-        .populate({
-          path: "author",
-          select: "_id username phonenumber avatar",
-          model: "Users",
-          populate: {
-            path: "avatar",
-            select: "_id fileName",
-            model: "Documents",
-          },
-        });
+      // .populate("images", ["fileName"])
+      // .populate("videos", ["fileName"])
+      .populate({
+        path: "author",
+        // select: "_id username phonenumber avatar",
+        model: "Users",
+      //   populate: {
+      //     path: "avatar",
+      //     select: "_id fileName",
+      //     model: "Documents",
+      //   },
+      });
     }
     let postWithIsLike = [];
     for (let i = 0; i < posts.length; i++) {

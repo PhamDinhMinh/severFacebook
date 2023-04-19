@@ -10,7 +10,10 @@ const usersController = {};
 usersController.register = async (req, res, next) => {
   try {
     const { phonenumber, password, username } = req.body;
-
+    const avatar =
+      "https://static2.yan.vn/YanNews/2167221/202102/facebook-cap-nhat-avatar-doi-voi-tai-khoan-khong-su-dung-anh-dai-dien-e4abd14d.jpg?fbclid=IwAR2rTIcznV6Zw1UKp0V0QONEuoVmgkUH2NnyqwJpTAlVSWmxH9StICNRsf8";
+    const coverImage =
+      "https://img4.thuthuatphanmem.vn/uploads/2020/05/12/hinh-anh-xam-don-gian_103624444.jpg?fbclid=IwAR372dZIdPA-ryBM5HdtXkgdi6gz5ye3HRIMQyM6F5OGWFAEYExUksa-mgg";
     let user = await UserModel.findOne({
       phonenumber: phonenumber,
     });
@@ -23,19 +26,19 @@ usersController.register = async (req, res, next) => {
     //Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    let avatar = await DocumentModel.findById("63a12040c2efff43d6acbd40");
-    let coverImage = await DocumentModel.findById("63a3b5b1c377b22eba339de6");
+
     user = new UserModel({
       phonenumber: phonenumber,
       password: hashedPassword,
       username: username,
-      avatar: "63a12040c2efff43d6acbd40",
-      cover_image: "60c39eb8f0b2c4268eb53366",
+      avatar: avatar,
+      cover_image: coverImage,
+      birthday: "2000/12/12",
     });
 
     try {
       const savedUser = await user.save();
-
+      console.log(11, savedUser.birthday);
       // login for User
       // create and assign a token
       const token = jwt.sign(
@@ -48,13 +51,7 @@ usersController.register = async (req, res, next) => {
         JWT_SECRET
       );
       res.status(httpStatus.CREATED).json({
-        data: {
-          id: savedUser._id,
-          phonenumber: savedUser.phonenumber,
-          username: savedUser.username,
-          avatar: avatar,
-          cover_image: coverImage,
-        },
+        data: { savedUser },
         token: token,
       });
     } catch (e) {
@@ -103,9 +100,7 @@ usersController.login = async (req, res, next) => {
     delete user["password"];
     return res.status(httpStatus.OK).json({
       data: {
-        id: user._id,
-        phonenumber: user.phonenumber,
-        username: user.username,
+        user,
       },
       token: token,
     });
@@ -119,71 +114,21 @@ usersController.edit = async (req, res, next) => {
   try {
     let userId = req.userId;
     let user;
-    const { avatar, cover_image } = req.body;
-    const dataUserUpdate = {};
-    const listPros = [
-      "username",
-      "gender",
-      "birthday",
-      "description",
-      "address",
-      "city",
-      "country",
-      "avatar",
-      "cover_image",
-    ];
-    for (let i = 0; i < listPros.length; i++) {
-      let pro = listPros[i];
-      if (req.body.hasOwnProperty(pro)) {
-        switch (pro) {
-          case "avatar":
-            let savedAvatarDocument = null;
-            if (uploadFile.matchesFileBase64(avatar) !== false) {
-              const avatarResult = uploadFile.uploadFile(avatar);
-              if (avatarResult !== false) {
-                let avatarDocument = new DocumentModel({
-                  fileName: avatarResult.fileName,
-                  fileSize: avatarResult.fileSize,
-                  type: avatarResult.type,
-                });
-                savedAvatarDocument = await avatarDocument.save();
-              }
-            } else {
-              savedAvatarDocument = await DocumentModel.findById(avatar);
-            }
-            dataUserUpdate[pro] =
-              savedAvatarDocument !== null ? savedAvatarDocument._id : null;
-            break;
-          case "cover_image":
-            let savedCoverImageDocument = null;
-            if (uploadFile.matchesFileBase64(cover_image) !== false) {
-              const coverImageResult = uploadFile.uploadFile(cover_image);
-              if (coverImageResult !== false) {
-                let coverImageDocument = new DocumentModel({
-                  fileName: coverImageResult.fileName,
-                  fileSize: coverImageResult.fileSize,
-                  type: coverImageResult.type,
-                });
-                savedCoverImageDocument = await coverImageDocument.save();
-              }
-            } else {
-              savedCoverImageDocument = await DocumentModel.findById(
-                cover_image
-              );
-            }
-            dataUserUpdate[pro] =
-              savedCoverImageDocument !== null
-                ? savedCoverImageDocument._id
-                : null;
-            break;
-          default:
-            dataUserUpdate[pro] = req.body[pro];
-            break;
-        }
-      }
-    }
 
-    user = await UserModel.findOneAndUpdate({ _id: userId }, dataUserUpdate, {
+    const dataUserUpdate = {};
+    // const listPros = [
+    // "username",
+    // "gender",
+    // "birthday",
+    // "description",
+    // "address",
+    // "city",
+    // "country",
+    // "avatar",
+    // "cover_image",
+    // ];
+
+    user = await UserModel.findOneAndUpdate({ _id: userId }, req.body, {
       new: true,
       runValidators: true,
     });
@@ -193,12 +138,10 @@ usersController.edit = async (req, res, next) => {
         .status(httpStatus.NOT_FOUND)
         .json({ message: "Can not find user" });
     }
-    user = await UserModel.findById(userId)
-      .select(
-        "phonenumber username gender birthday avatar cover_image blocked_inbox blocked_diary"
-      )
-      .populate("avatar")
-      .populate("cover_image");
+    user = await UserModel.findById(userId);
+    // .select(
+    //   "phonenumber username gender birthday avatar cover_image blocked_inbox blocked_diary description city country "
+    // )
     return res.status(httpStatus.OK).json({
       data: user,
     });
@@ -258,12 +201,12 @@ usersController.changePassword = async (req, res, next) => {
       },
       JWT_SECRET
     );
-    user = await UserModel.findById(userId)
-      .select(
-        "phonenumber username gender birthday avatar cover_image blocked_inbox blocked_diary"
-      )
-      .populate("avatar")
-      .populate("cover_image");
+    user = await UserModel.findById(userId);
+    // .select(
+    //   "phonenumber username gender birthday avatar cover_image blocked_inbox blocked_diary description city country "
+    // )
+    // .populate("avatar")
+    // .populate("cover_image");
     return res.status(httpStatus.OK).json({
       data: user,
       token: token,
@@ -283,12 +226,12 @@ usersController.show = async (req, res, next) => {
       userId = req.userId;
     }
 
-    let user = await UserModel.findById(userId)
-      .select(
-        "phonenumber username gender birthday avatar cover_image blocked_inbox blocked_diary description"
-      )
-      .populate("avatar")
-      .populate("cover_image");
+    let user = await UserModel.findById(userId);
+    // .select(
+    //   "phonenumber username gender birthday avatar cover_image blocked_inbox blocked_diary description city country "
+    // )
+    // .populate("avatar")
+    // .populate("cover_image");
     if (user == null) {
       return res
         .status(httpStatus.NOT_FOUND)
@@ -309,9 +252,9 @@ usersController.showByPhone = async (req, res, next) => {
   try {
     let phonenumber = req.params.phonenumber;
 
-    let user = await UserModel.findOne({ phonenumber: phonenumber })
-      .populate("avatar")
-      .populate("cover_image");
+    let user = await UserModel.findOne({ phonenumber: phonenumber });
+    // .populate("avatar")
+    // .populate("cover_image");
     if (user == null) {
       return res
         .status(httpStatus.NOT_FOUND)
@@ -338,10 +281,7 @@ usersController.setBlock = async (req, res, next) => {
     }
     let type = req.body.type;
     let user = await UserModel.findById(req.userId);
-    blocked = [];
-    if (user.hasOwnProperty("blocked")) {
-      blocked = user.blocked_inbox;
-    }
+    blocked = user.blocked_inbox;
 
     if (type) {
       if (blocked.indexOf(targetId) === -1) {
@@ -378,10 +318,10 @@ usersController.setBlockDiary = async (req, res, next) => {
     }
     let type = req.body.type;
     let user = await UserModel.findById(req.userId);
-    blocked = [];
-    if (user.hasOwnProperty("blocked")) {
-      blocked = user.blocked_diary;
-    }
+    blocked = user.blocked_diary;
+    // if (user.hasOwnProperty("blocked")) {
+    //   blocked = user.blocked_diary;
+    // }
 
     if (type) {
       if (blocked.indexOf(targetId) === -1) {
@@ -413,8 +353,8 @@ usersController.searchUser = async (req, res, next) => {
     let searchKey = new RegExp(req.body.keyword, "i");
     let result = await UserModel.find({ phonenumber: searchKey })
       .limit(10)
-      .populate("avatar")
-      .populate("cover_image")
+      // .populate("avatar")
+      // .populate("cover_image")
       .exec();
 
     res.status(200).json({

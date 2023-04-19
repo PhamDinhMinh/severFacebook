@@ -9,18 +9,7 @@ const postsSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  // images: [
-  //     {
-  //         type: mongoose.Schema.Types.ObjectId,
-  //         ref: "Documents"
-  //     }
-  // ],
-  // videos: [
-  //     {
-  //         type: mongoose.Schema.Types.ObjectId,
-  //         ref: "Documents"
-  //     }
-  // ],
+
   images: [String],
   videos: [String],
   like: [

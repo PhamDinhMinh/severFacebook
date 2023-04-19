@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "restful-api-cafe_do_an_thiet_ke_cnpm",
   "main": "index.js",
+  "engines": {
+    "node": "14.x"
+  },
   "repository": "https://github.com/tonytran99/do_an_thiet_ke_cnpm_20202.git",
   "author": "tonytran99",
   "license": "MIT",
